@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { Link, Tabs } from 'expo-router';
+import { Link, Tabs, useRouter } from 'expo-router';
 import { Pressable, View, useColorScheme } from 'react-native';
 
 import Colors from '../../constants/Colors';
@@ -16,6 +16,7 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
+    const router = useRouter();
 
     return (
         <Tabs
@@ -29,42 +30,45 @@ export default function TabLayout() {
                     title: 'UBERCTRL',
                     headerRight: () => (
                         <View style={{ flexDirection: 'row' }}>
-                            <Link href="/manual" asChild>
-                                <Pressable>
-                                    {({ pressed }) => (
-                                        <Icon
-                                            name="book-open-page-variant-outline"
-                                            size={25}
-                                            color={Colors[colorScheme ?? 'light'].text}
-                                            style={{ marginRight: 30, opacity: pressed ? 0.5 : 1 }}
-                                        />
-                                    )}
-                                </Pressable>
-                            </Link>
-                            <Link href="/donate" asChild>
-                                <Pressable>
-                                    {({ pressed }) => (
-                                        <Icon
-                                            name="heart-outline"
-                                            size={25}
-                                            color={Colors[colorScheme ?? 'light'].text}
-                                            style={{ marginRight: 30, opacity: pressed ? 0.5 : 1 }}
-                                        />
-                                    )}
-                                </Pressable>
-                            </Link>
-                            <Link href="/privacy" asChild>
-                                <Pressable>
-                                    {({ pressed }) => (
-                                        <Icon
-                                            name="shield-account-outline"
-                                            size={25}
-                                            color={Colors[colorScheme ?? 'light'].text}
-                                            style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                                        />
-                                    )}
-                                </Pressable>
-                            </Link>
+                            <Pressable
+                                onPress={() => { router.push('manual') }}
+                                style={{ marginRight: 30 }}
+                            >
+                                {({ pressed }) => (
+                                    <Icon
+                                        name="book-open-page-variant-outline"
+                                        size={25}
+                                        color={Colors[colorScheme ?? 'light'].text}
+                                        style={{ opacity: pressed ? 0.5 : 1 }}
+                                    />
+                                )}
+                            </Pressable>
+                            <Pressable
+                                onPress={() => { router.push('donate') }}
+                                style={{ marginRight: 30 }}
+                            >
+                                {({ pressed }) => (
+                                    <Icon
+                                        name="heart-outline"
+                                        size={25}
+                                        color={Colors[colorScheme ?? 'light'].text}
+                                        style={{ opacity: pressed ? 0.5 : 1 }}
+                                    />
+                                )}
+                            </Pressable>
+                            <Pressable
+                                onPress={() => { router.push('privacy') }}
+                                style={{ marginRight: Platform.OS === 'android' ? 0 : 15 }}
+                            >
+                                {({ pressed }) => (
+                                    <Icon
+                                        name="shield-account-outline"
+                                        size={25}
+                                        color={Colors[colorScheme ?? 'light'].text}
+                                        style={{ opacity: pressed ? 0.5 : 1 }}
+                                    />
+                                )}
+                            </Pressable>
                         </View>
                     )
                 }}

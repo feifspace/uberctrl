@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
-import { Avatar, Button, Card, FAB, Icon, IconButton, Text } from 'react-native-paper';
+import { Avatar, Button, Card, Divider, FAB, Icon, IconButton, Menu, Text } from 'react-native-paper';
 import { useNavigation, useRouter } from 'expo-router';
 import * as Device from 'expo-device';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function TabOneScreen() {
     const navigation = useNavigation();
@@ -12,15 +13,11 @@ export default function TabOneScreen() {
     
     const [data, setData] = useState([]);
     
-    const DATA = [{
-        id: '58694a0f-3da1-471f-bd96-145571e29d72',
-        user: 'feif',
-        host: 'deneb.uberspace.de'
-    }, {
-        id: 'new',
-        user: 'concta',
-        host: 'kojima.uberspace.de'
-    }];
+    const [visible, setVisible] = useState(false);
+
+    const openMenu = () => setVisible(true);
+
+    const closeMenu = () => setVisible(false);
     
     const storeData = async (key, value) => {
         try {
@@ -37,17 +34,18 @@ export default function TabOneScreen() {
             return jsonValue != null ? JSON.parse(jsonValue) : null;
         } catch (e) {
             // error reading value
+            console.log(e)
         }
     };
     
     const LeftContent = props => <Avatar.Icon {...props}  icon="orbit" />
     
-    const Item = ({user, host, image}) => (
+    const Item = ({user, host}) => (
         <View style={[styles.item, { width: (isMobile ? '50%' : '25%'), alignItems: 'center' }]}>
             {/*<Avatar.Image size={130} source={image} style={{marginBottom: 15 }} />*/}
             <Card style={styles.card} onPress={() => {
                 
-                router.push({ pathname: 'space', params: { user: user, host: host } });
+                router.push({ pathname: 'space', params: { user: user } });
             }}>
                 {/*<Card.Title title={title} subtitle={host} left={LeftContent} />*/}
                 <Card.Content>
@@ -58,7 +56,7 @@ export default function TabOneScreen() {
                         />
                     </View>
                     <Text variant="titleMedium">{user}</Text>
-                    <Text variant="bodySmall">{host}</Text>
+                    <Text variant="bodySmall">{host}.uberspace.de</Text>
                 </Card.Content>
                 {/*<Card.Actions>
                     <IconButton icon="trash-can-outline" />
@@ -67,11 +65,11 @@ export default function TabOneScreen() {
             </Card>
         </View>
     );
-
+    
     useEffect(() => {
         getData('spaces')
         .then((res) => {
-            
+            setData(res);
         });
         
         navigation.setOptions({
@@ -83,11 +81,20 @@ export default function TabOneScreen() {
         <View style={styles.container}>
             <FlatList
                 numColumns={isMobile ? 2 : 4}
-                data={DATA}
+                data={data}
                 _scrollEnabled={false}
-                renderItem={({item}) => <Item user={item.user} host={item.host} />}
+                renderItem={({item}) => <Item user={item.username} host={item.hostname} />}
                 keyExtractor={item => item.id}
             />
+            <Menu
+          visible={visible}
+          onDismiss={closeMenu}
+          anchor={<Button onPress={openMenu}>Show menu</Button>}>
+          <Menu.Item onPress={() => {}} title="Item 1" />
+          <Menu.Item onPress={() => {}} title="Item 2" />
+          <Divider />
+          <Menu.Item onPress={() => {}} title="Item 3" />
+        </Menu>
             <FAB
                 icon="plus"
                 _label="Anlegen"

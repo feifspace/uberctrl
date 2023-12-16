@@ -1,30 +1,33 @@
 import { io } from 'socket.io-client/dist/socket.io';
 
-let socket = io('https://' + (process.env.NODE_ENV == 'development' ? 'dev' : 'api') + '.feif.space/uberctrl', {autoConnect: false, query: {}});
-   /*let deviceid = await getData('deviceid');
-    
-    socket.emit('booting', { deviceid: deviceid }, (res) => {
-        global.user = Object.assign(res.user, { version: Constants.manifest.version });
-    });*/
+let helper = io('https://' + (process.env.NODE_ENV == 'development' ? 'dev' : 'api') + '.feif.space/uberctrl', {autoConnect: false, query: {}});
 
-export const connect = () => {
+let space = false;
+
+export const connect = (data) => {
     return new Promise(function(resolve, reject) {
-        socket.on('connect', () => {
+        space = io('https://' + data.url + '/uberctrl', { autoConnect: false, query: {} });
+        space.on('connect', () => {
             resolve(true);
         });
-            
-            
+        
         setTimeout(() => {
             reject(false);
         }, 1500);
         
-        socket.connect();
+        space.connect();
+    });
+};
+
+export const disconnect = () => {
+    return new Promise(function(resolve, reject) {
+        space.disconnect();
     });
 };
 
 export const onDisconnect = () => {
     return new Promise(function(resolve, reject) {
-        socket.on('disconnect', () => {
+        space.on('disconnect', () => {
             resolve(true);
         });
     });
@@ -32,43 +35,32 @@ export const onDisconnect = () => {
 
 export const onReconnect = () => {
     return new Promise(function(resolve, reject) {
-        socket.io.on("reconnect", () => {
+        space.io.on("reconnect", () => {
             resolve(true);
         });
     });
 };
 
-export const submitCommand = (data) => {
+export const submitCommand = (target, data) => {
     return new Promise(function(resolve, reject) {
-        socket.io.on("execute", data, (res) => {
+        space.on("execute", data, (res) => {
             resolve(res);
         });
     });
 };
 
-export const sendContactForm = (name, email, message, phone) => {
+export const connectHelper = () => {
     return new Promise(function(resolve, reject) {
-        socket.emit('sendContactForm', { name, email, message, phone }, (res) => {
-            if (res) {
-                resolve(true);
-            } else {
-                resolve(false);
-            }
-        });
-    });
-};
-
-export const saveUserSignature = () => {
-    return new Promise(function(resolve, reject) {
-        if (socket.connected) {
+        helper.on('connect', () => {
             resolve(true);
-        } else {
-        }
-    });
-};
-
-export const uploadImages = (data, callback) => {
-    socket.emit('uploadImages', data, (response) => {
-        callback(response);
+        });
+        
+        helper.connect();
+        
+        setTimeout(() => {
+            if (!helper.connected) {
+                reject(false);
+            }
+        }, 3000);
     });
 };

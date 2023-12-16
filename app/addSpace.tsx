@@ -1,17 +1,19 @@
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { Platform, Pressable, ScrollView, StyleSheet, View, useColorScheme } from 'react-native';
 import { Button, Switch, Text, TextInput } from 'react-native-paper';
 import * as Linking from 'expo-linking';
 import * as Clipboard from 'expo-clipboard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Colors from '../constants/Colors';
 
 export default function DonateScreen() {
     const colorScheme = useColorScheme();
     const navigation = useNavigation();
+    const router = useRouter();
     const [user, setUser] = useState('');
     const [host, setHost] = useState('');
     const [password, setPassword] = useState('');
@@ -37,32 +39,32 @@ export default function DonateScreen() {
         setPassword(temp);
     };
     
+    const storeSpace = async (value) => {
+        try {
+            let spaces = await AsyncStorage.getItem('spaces');
+            if (spaces !== null) {
+                spaces = JSON.parse(spaces);
+            } else {
+                spaces = []
+            }
+            
+            const i = spaces.findIndex(e => e.username === value.username);
+            if (i > -1) {
+                /* vendors contains the element we're looking for, at index "i" */
+                spaces[i] = value
+            } else {
+                spaces.push(value)
+            }
+            await AsyncStorage.setItem('spaces', JSON.stringify(spaces));
+        } catch (e) {
+            // saving error
+        }
+    };
+    
     useEffect(() => {
         navigation.setOptions({
             headerRight: () => (
                 <View style={{ flexDirection: 'row' }}>
-                    {/*<FontAwesome
-                        name="save"
-                        size={25}
-                        color={Colors[colorScheme ?? 'light'].text}
-                        style={{ marginRight: 30 }}
-                        onPress={() => {
-                            ping({ url: url != '' ? url : 'uberctrl.' + uberspace.toLowerCase() + '.uber.space' })
-                            .then((res) => {
-                                if (res) {
-                                    storeJSON({ username: uberspace, hostname: host.replace('.uberspace.de', ''), password: password, url: (url != '' ? url : 'uberctrl.' + uberspace.toLowerCase() + '.uber.space'), port: (port != '' ? port : '65000') })
-                                    .then(() => {
-                                        getPassword('new')
-                                        .then((res) => {
-                                            setPassword(res)
-                                        });
-                                    });
-                                }
-                            });
-                        }}
-                    />*/}
-                    
-                    
                     <Pressable
                         onPress={() => {
                             alert('ok')
@@ -79,6 +81,7 @@ export default function DonateScreen() {
                                 }
                             });*/
                         }}
+                        style={{ marginRight: 30 }}
                         disabled={!autoSetup ? true : false}
                     >
                         {({ pressed }) => (
@@ -86,27 +89,29 @@ export default function DonateScreen() {
                                 name="auto-fix"
                                 size={25}
                                 color={autoSetup ?  Colors[colorScheme ?? 'light'].text : 'lightgrey'}
-                                style={{ marginRight: 30, opacity: pressed ? 0.5 : 1 }}
+                                style={{ opacity: pressed ? 0.5 : 1 }}
                             />
                         )}
                     </Pressable>
                     
                     <Pressable
                         onPress={() => {
-                            alert('ok')
                             /*ping({ url: url != '' ? url : 'uberctrl.' + uberspace.toLowerCase() + '.uber.space' })
                             .then((res) => {
-                                if (res) {
-                                    storeJSON({ username: uberspace, hostname: host.replace('.uberspace.de', ''), password: password, url: (url != '' ? url : 'uberctrl.' + uberspace.toLowerCase() + '.uber.space'), port: (port != '' ? port : '65000') })
+                                if (res) {*/
+                                    storeSpace({ username: user, hostname: host.replace('.uberspace.de', ''), password: password, url: (url != '' ? url : 'uberctrl.' + user.toLowerCase() + '.uber.space'), port: (port != '' ? port : '65000') })
                                     .then(() => {
-                                        getPassword('new')
+                                        router.replace('(tabs)');
+                                        /*getPassword('new')
                                         .then((res) => {
                                             setPassword(res)
-                                        });
+                                        });*/
+                                        
                                     });
-                                }
+                                /*}
                             });*/
                         }}
+                        style={{ marginRight: Platform.OS === 'android' ? 0 : 15 }}
                         disabled={user != '' && host != '' && password != '' ? false : true}
                     >
                         {({ pressed }) => (
@@ -114,7 +119,7 @@ export default function DonateScreen() {
                                 name="content-save-outline"
                                 size={25}
                                 color={user != '' && host != '' && password != '' ?  Colors[colorScheme ?? 'light'].text : 'lightgrey'}
-                                style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                                style={{ opacity: pressed ? 0.5 : 1 }}
                             />
                         )}
                     </Pressable>

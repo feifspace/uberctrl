@@ -1,8 +1,9 @@
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View, useColorScheme } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Colors from '../../constants/Colors';
 
@@ -12,13 +13,35 @@ export default function SpaceScreen() {
     const colorScheme = useColorScheme();
     const router = useRouter();
     
+    const [space, setSpace] = useState([]);
+    
+    const loadSpace = async (value) => {
+        try {
+            let spaces = JSON.parse(await AsyncStorage.getItem('spaces'));
+            
+            const i = spaces.findIndex(e => e.username === value);
+            if (i > -1) {
+                /* vendors contains the element we're looking for, at index "i" */
+                return spaces[i];
+            }
+        } catch (e) {
+            // saving error
+        }
+    };
+    
     useEffect(() => {
+        loadSpace(local.user)
+        .then((res) => {
+            console.log(res)
+            setSpace(res);
+        });
+        
         navigation.setOptions({
-            title: local.user ? local.user.toUpperCase() : '',
+            title: local.user.toUpperCase(),
             headerRight: () => (
                 <View style={{ flexDirection: 'row' }}>
                     <Pressable onPress={() => {
-                        router.push({ pathname: 'console', params: { user: local.user ? local.user : '', host: local.host ? local.host : '' }});
+                        router.push({ pathname: 'console', params: { user: local.user }});
                     }}>
                         {({ pressed }) => (
                             <Icon
@@ -48,7 +71,8 @@ export default function SpaceScreen() {
     
     return (
         <View style={styles.container}>
-            <Text>klappt</Text>
+            <Text>Username: {space.username}</Text>
+            <Text>Hostname: {space.hostname}.uberspace.de</Text>
         </View>
     );
 }
@@ -56,7 +80,7 @@ export default function SpaceScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        padding: 15
     }
 });

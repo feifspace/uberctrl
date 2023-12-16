@@ -7,7 +7,7 @@ import { Redirect, SplashScreen, Stack, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 
-import { connect, onDisconnect, onReconnect } from '../components/Websockets';
+import { connectHelper } from '../components/Websockets';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -35,23 +35,15 @@ export default function RootLayout() {
     }, [error]);
         
     useEffect(() => {
-        connect()
+        connectHelper()
         .then((res) => {
             SplashScreen.hideAsync();
         })
         .catch(err => {
             SplashScreen.hideAsync();
-            //router.replace('update');
-        });
-        
-        onDisconnect()
-        .then(() => {
-            //router.replace('update'); 
-        });
-        
-        onReconnect()
-        .then(() => {
-            //router.replace('(tabs)'); 
+            setTimeout(() => {
+                router.replace('update');
+            }, 1000);
         });
     }, [loaded]);
 
